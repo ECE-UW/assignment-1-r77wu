@@ -51,7 +51,6 @@ def decode_command(command, command_type):
         if command_type in ["a", "c"]:
             points_str = re.search(points_pattern, command)
             points = [eval(i+')') for i in points_str.group().split(")")[:-1]]
-#         print('in if')
     else:
 #         print >> sys.stderr, ERROR_MSG + '%s command is invalid'%(command_type)
         print(ERROR_MSG + '%s command is invalid'%(command_type))
