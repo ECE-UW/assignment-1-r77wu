@@ -23,7 +23,9 @@ def get_command_type(command):
     return command_type
 
 def decode_command(command, command_type):
-    points_pattern = r'(\( *(-?[1-9]+\d* *), *(-?[1-9]+\d*) *\) *)+$'
+
+    points_pattern = r'(\( *(-?[0-9]\d*(\.\d+)?) *, *(-?[0-9]\d*(\.\d+)?) *\) *){2,}$'
+
     ac_pattern = r'^ *[a|c] *"[a-zA-Z ]+" +' + points_pattern
     r_pattern = r'^ *r +"[a-zA-Z ]+" *$'
     g_pattern = r'^ *g *$'
@@ -36,27 +38,22 @@ def decode_command(command, command_type):
         command_valid = re.match(ac_pattern, command)
     elif command_type == "r":
         command_valid = re.match(r_pattern, command)
-    elif command_type == "g":
+    else: #command_type == "g"
         command_valid = re.match(g_pattern, command)
-    # command_type is not valid
-    else:
-        print(ERROR_MSG + 'can only recorgnize command type a or c or r or g')
-        pass
 
-    # TO DO: g
     if command_valid:
         name_s = command.find('"')
         name_e = command.find('"', name_s+1)
         street_name = command[name_s:name_e+1]
         if command_type in ["a", "c"]:
             points_str = re.search(points_pattern, command)
+            ## TO DO: handing leading zeros
             points = [eval(i+')') for i in points_str.group().split(")")[:-1]]
     else:
-#         print >> sys.stderr, ERROR_MSG + '%s command is invalid'%(command_type)
-        print(ERROR_MSG + '%s command is invalid'%(command_type))
+        sys.stderr.write(ERROR_MSG + '%s command is invalid.\n'%(command_type))
     return street_name, points
 
-## TO DO
+
 def create_graph_from_map(street_map):
     """Generate map graph from StreetMap.
 
@@ -76,12 +73,20 @@ def create_graph_from_map(street_map):
                      }
     edges = {(1,2):1,(2,3):1,(3,4):1,(4,5):1,(6,7):2,(8,9):3}
     """
-
-    nodes = {}
-    edges = {}
+    nodes = dict()
+    edges = dict()
+    key_count = 0
+    street_code = 1
+    for k, v in street_map.items():
+        for x in v:
+            key_count = key_count+1
+            nodes[key_count]= x
+            if x != v[-1]:
+                edges[key_count, key_count+1] = street_code
+            else:
+                street_code = street_code + 1
     return nodes, edges
 
-## TO DO
 def segment_line(line, intersects):
     """Returns line segments divide by intersect points
 
@@ -104,7 +109,17 @@ def segment_line(line, intersects):
               }
     """
     result = set()
+    line = sorted(line)
+    intersects = sorted(intersects)
 
+    left_p = line[0]
+    right_p = line[1]
+    for i in intersects:
+        if IsPointOnLineSegement(line[0], line[1], i):
+            result.add((left_p, i))
+            left_p = i
+    
+    result.add((left_p,right_p))
     return result
 
 
@@ -129,7 +144,6 @@ def line_segment_intersection(line1, line2):
     div = det(x_d, y_d)
     if div == 0:
         return ()
-       # raise Exception('lines do not intersect')
 
     d = (det(*line1), det(*line2))
     x = det(d, x_d) / div
@@ -159,45 +173,24 @@ class StreetMap:
         self.streets = dict()
 
     def add_street(self, street_name, points):
-        # print('--------street_name, points: ',street_name, points)
-        #if street_name not valid:
-            # Raise Error
-        #if points not valid:
-            # Raise Error
-        # Check if self interacte
-        # Street with one point
+        # TO DO: Check if self intersect
         if street_name in self.streets:
-            # Raise error
-            print('error in add_street')
+            sys.stderr.write(ERROR_MSG + 'Steet has existed, cannot add street.\n')
         else:
             self.streets[street_name] = points
-        print('--- self.streets', self.streets)
-
+        
     def change_street(self, street_name, points):
-        # print('--------street_name, points: ',street_name, points)
-        #if street_name not valid:
-            # Raise Error
-        #if points not valid:
-            # Raise Error
+        #TO DO: Check if self intersect
         if street_name not in self.streets:
-            # Raise error
-            print('error in change_street')
+            sys.stderr.write(ERROR_MSG + 'Street does not exist, cannot change street.\n')
         else:
             self.streets[street_name] = points
-        print('--- self.streets', self.streets)
 
     def remove_street(self, street_name):
-        # print('--------street_name: ',street_name)
-        #if street_name not valid:
-            # Raise Error
-        #if points not valid:
-            # Raise Error
         if street_name not in self.streets:
-            # Raise error
-            print('error in remove_street')
+            sys.stderr.write(ERROR_MSG + 'Street does not exist, cannot remove street.\n')
         else:
             del self.streets[street_name]
-        print('--- self.streets', self.streets)
 
     def generate_graph(self):
         intersect_count = {}
@@ -208,23 +201,16 @@ class StreetMap:
         nodes_count = len(nodes)
 
         intersects = set()
-        vertice = {}
+        vertice = dict()
         graph_edges = set()
-
-        # new_name = 'intersect'
-        # print("----edges: ", edges)
         
         for seg1, seg2 in list(combinations(edges,2)):
-            # Check if two segments are from same street
-            # print("----seg1,seg2: ", seg1, seg2)
             if edges[seg1] != edges[seg2]:
                 p11, p12 = nodes[seg1[0]],nodes[seg1[1]]
                 p21, p22 = nodes[seg2[0]],nodes[seg2[1]]
-                # print('(p11, p12), (p21, p22) : ', (p11, p12), (p21, p22))
                 intersect = line_segment_intersection((p11, p12), (p21, p22))
-                if intersect:
 
-                    # print("----intersect: ", intersect)
+                if intersect:
                     intersect_count[seg1] += 1 
                     intersect_count[seg2] += 1
                     vertice[p11] = seg1[0]
@@ -232,25 +218,20 @@ class StreetMap:
                     vertice[p21] = seg2[0]
                     vertice[p22] = seg2[1]
 
-                    # if intersect not in vertice:
                     if intersect not in vertice:
                         nodes_count += 1
-                        vertice[intersect] = "intersect"+str(nodes_count)
+                        vertice[intersect] = nodes_count
                         nodes[nodes_count] = intersect
                         intersects.add(intersect)
 
-
-        # print("----intersect_count: ", intersect_count)
         for edge, c in intersect_count.items():
             if c == 0 and edge in edges:
                 del edges[edge]
 
         for e, key in edges.items():
             input_line = (nodes[e[0]], nodes[e[1]])
-            print(input_line)
             intersect_segments = segment_line(input_line, intersects)
             if intersect_segments:
-                # print ("--------intersect_segments", intersect_segments)
                 graph_edges = graph_edges.union(intersect_segments)
 
         ## TO DO
@@ -258,13 +239,14 @@ class StreetMap:
         for e in graph_edges:
             p1, p2 = e
             graph_edges_repr.add((vertice[p1],vertice[p2]))
-        print('-----edges: ', edges)
-        print('-----graph_edges: ', graph_edges)
+        # print('-----edges: ', edges)
+        # print('-----graph_edges: ', graph_edges)
+        sys.stdout.write('V = ' + str(vertice) + '\n')
+        sys.stdout.write('E = ' + str(graph_edges_repr) + '\n')
         # print('-----graph_edges_repr: ', graph_edges_repr)
-        print('-----vertice: ', vertice)
+        # print('-----vertice: ', vertice)
 
-
-        return vertice, graph_edges
+        return 0
 
 
     
@@ -279,21 +261,25 @@ def main():
     while True:
         command = sys.stdin.readline().strip()
         command_type = get_command_type(command)
-        print 'read a command:', command
+
         if command_type == "a":
             street_name, points = decode_command(command, command_type)
-            street_map.add_street(street_name.lower(), points)
+            if street_name != '' and points != list():
+                street_map.add_street(street_name.lower(), points)
         elif command_type == "c":
             street_name, points = decode_command(command, command_type)
-            street_map.change_street(street_name.lower(), points)
+            if street_name != '' and points != list():
+                street_map.change_street(street_name.lower(), points)
         elif command_type == "r":
             street_name, _ = decode_command(command, command_type)
-            street_map.remove_street(street_name.lower())
+            if street_name != '':
+                street_map.remove_street(street_name.lower())
         elif command_type == "g":
             street_map.generate_graph()  
-        else:
-            print('reach at the break')
-            break
+        else: ## command_type == ""
+            sys.stderr.write(ERROR_MSG + 'can only recorgnize command type a / c / r / g\n')
+            #TO DO:
+            # break
 
 
     print 'Finished reading input'
