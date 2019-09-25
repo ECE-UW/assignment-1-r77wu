@@ -239,12 +239,25 @@ class StreetMap:
         for e in graph_edges:
             p1, p2 = e
             graph_edges_repr.add((vertice[p1],vertice[p2]))
-        # print('-----edges: ', edges)
-        # print('-----graph_edges: ', graph_edges)
-        sys.stdout.write('V = ' + str(vertice) + '\n')
-        sys.stdout.write('E = ' + str(graph_edges_repr) + '\n')
-        # print('-----graph_edges_repr: ', graph_edges_repr)
-        # print('-----vertice: ', vertice)
+        
+        spaces2 = '  '
+        V_graph = 'V = {\n'
+        for p, k in vertice.items():
+            p_x, p_y = p
+            p_x = "%.2f" % p_x if isinstance(p_x, float) else str(p_x)
+            p_y = "%.2f" % p_y if isinstance(p_y, float) else str(p_y)
+            p_xy = '(' + p_x + ',' + p_y + ')'
+            V_graph += spaces2 + str(k) + ':' + spaces2 + p_xy + '\n'
+        V_graph += '}'
+
+
+        E_graph = 'E = {\n'
+        for e in graph_edges_repr:
+            E_graph += spaces2 + '<' + str(e[0]) + ',' + str(e[1]) + '>,\n'
+
+        E_graph += '}'
+        sys.stdout.write(V_graph + '\n')
+        sys.stdout.write(E_graph + '\n')
 
         return 0
 
@@ -278,11 +291,8 @@ def main():
             street_map.generate_graph()  
         else: ## command_type == ""
             sys.stderr.write(ERROR_MSG + 'can only recorgnize command type a / c / r / g\n')
-            #TO DO:
-            # break
 
 
-    print 'Finished reading input'
     # return exit code 0 on successful termination
     sys.exit(0)
 
