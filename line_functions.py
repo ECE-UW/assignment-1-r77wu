@@ -1,3 +1,7 @@
+import sys
+import re
+from itertools import combinations 
+
 EPSILON = 0.0001;
 
 def segment_line(line, intersects):
@@ -30,10 +34,12 @@ def segment_line(line, intersects):
         right_p = line[1]
         for i in intersects:
             if IsPointOnLineSegement(line[0], line[1], i):
-                result.add((left_p, i))
-                left_p = i
-        
-        result.add((left_p,right_p))
+            	if left_p != i:
+            		result.add((left_p, i))
+            	left_p = i
+
+        if left_p != right_p:
+        	result.add((left_p,right_p))
     except:
         pass
     return result
@@ -90,3 +96,32 @@ def IsPointOnLineSegement(linePointA, linePointB, point):
     except:
         pass
     return False
+
+
+def check_self_intersect(points):
+    self_intersect = False
+    try:
+	    if len(points) != len(set(points)):
+	        return True
+	    key_count = 0
+	    order_count = 1
+	    nodes = dict()
+	    edges = dict()
+	    for x in points:
+	        key_count = key_count+1
+	        nodes[key_count]= x
+	        if x != points[-1]:
+	            edges[order_count] = (key_count, key_count+1)
+	        order_count += 1
+	        
+	    for order1, e1 in edges.items():
+	        for order2, e2 in edges.items():
+	            
+	            if order2 < order1 - 1: 
+	                line1 = nodes[e1[0]],nodes[e1[1]]
+	                line2 = nodes[e2[0]],nodes[e2[1]]
+	                if line_segment_intersection(line1, line2):
+	                    self_intersect = True
+    except:
+        pass
+    return self_intersect
