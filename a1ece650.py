@@ -78,7 +78,7 @@ class StreetMap:
         intersects = set()
         vertice = dict()
         graph_edges = set()
-        graph_edges_repr = set()
+        graph_edges_repr = list()
         
         try:
             for seg1, seg2 in list(combinations(edges,2)):
@@ -94,12 +94,13 @@ class StreetMap:
                         vertice[p12] = seg1[1]
                         vertice[p21] = seg2[0]
                         vertice[p22] = seg2[1]
-                        intersects.add(intersect)
-
-                        if intersect not in vertice:
-                            nodes_count += 1
-                            vertice[intersect] = nodes_count
-                            nodes[nodes_count] = intersect
+     
+                        for inter in intersect:
+                            intersects.add(inter)
+                            if inter not in vertice:
+                                nodes_count += 1
+                                vertice[inter] = nodes_count
+                                nodes[nodes_count] = inter
 
             for edge, c in intersect_count.items():
                 if c == 0 and edge in edges:
@@ -113,7 +114,10 @@ class StreetMap:
 
             for e in graph_edges:
                 p1, p2 = e
-                graph_edges_repr.add((vertice[p1],vertice[p2]))
+                # print(type({vertice[p1],vertice[p2]}), {vertice[p1],vertice[p2]})
+                e_repr = {vertice[p1],vertice[p2]}
+                if e_repr not in graph_edges_repr:
+                    graph_edges_repr.append(e_repr)
         except:
             pass
         
@@ -130,6 +134,7 @@ class StreetMap:
 
         E_graph = 'E = {\n'
         for e in graph_edges_repr:
+            e = list(e)
             E_graph += spaces2 + '<' + str(e[0]) + ',' + str(e[1]) + '>,\n'
         E_graph = E_graph[:-2] + '\n'
         E_graph += '}'

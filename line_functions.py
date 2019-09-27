@@ -66,17 +66,19 @@ def line_segment_intersection(line1, line2):
 
         div = det(x_d, y_d)
         if div == 0:
-            if set(line1)&set(line2):
-                return list(set(line1)&set(line2))[0]
-            return ()
+            if if_one_line(line1[0], line1[1], line2[0]) and if_one_line(line1[0], line1[1], line2[0]):
+                if IsPointOnLineSegement(line1[0], line1[1], line2[0]) or IsPointOnLineSegement(line1[0], line1[1], line2[1]):
+                    points_4 = sorted((line1[0], line1[1], line2[0], line2[1]))
+                    return list(set(points_4[1:3]))
+            return []
 
         d = (det(*line1), det(*line2))
         x = det(d, x_d) / div
         y = det(d, y_d) / div
         if IsPointOnLineSegement(line1[0], line1[1], (x,y)) and IsPointOnLineSegement(line2[0], line2[1], (x,y)):      
-            return (x, y)
+            return [(x, y)]
         else:
-            return ()
+            return []
     except:
         pass
 
@@ -125,3 +127,11 @@ def check_self_intersect(points):
     except:
         pass
     return self_intersect
+
+
+def if_one_line(p1, p2,p3):
+    if (p1[1] - p2[1]) * (p1[0] - p3[0])  == (p1[0] - p2[0]) * (p1[1] - p3[1]):
+        return True
+    return False
+
+
