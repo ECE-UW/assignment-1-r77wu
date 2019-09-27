@@ -85,7 +85,7 @@ def line_segment_intersection(line1, line2):
 
 def IsPointOnLineSegement(linePointA, linePointB, point):
     try:
-        if linePointA[0] == linePointB[0]:
+        if if_one_line(linePointA, linePointB, point) and linePointA[0] == linePointB[0]:
             min_y = min(linePointA[1],linePointB[1])
             max_y = max(linePointA[1],linePointB[1])
             return min_y <= point[1] and point[1] <= max_y
