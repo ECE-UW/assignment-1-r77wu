@@ -114,7 +114,6 @@ class StreetMap:
 
             for e in graph_edges:
                 p1, p2 = e
-                # print(type({vertice[p1],vertice[p2]}), {vertice[p1],vertice[p2]})
                 e_repr = {vertice[p1],vertice[p2]}
                 if e_repr not in graph_edges_repr:
                     graph_edges_repr.append(e_repr)
@@ -155,15 +154,17 @@ def main():
 
         if command_type == "a":
             street_name, points = decode_command(command, command_type)
-            if check_self_intersect(points):
+            self_intersect = check_self_intersect(points)
+            if self_intersect:
                 sys.stderr.write(ERROR_MSG + 'Cannot add street with self intersect points\n')
-            elif street_name != '' and not check_self_intersect(points):
+            elif street_name != '' and not self_intersect:
                 street_map.add_street(street_name.lower(), points)
         elif command_type == "c":
             street_name, points = decode_command(command, command_type)
-            if check_self_intersect(points):
+            self_intersect = check_self_intersect(points)
+            if self_intersect:
                 sys.stderr.write(ERROR_MSG + 'Cannot change street with self intersect points\n')
-            elif street_name != '' and not check_self_intersect(points):
+            elif street_name != '' and not self_intersect:
                 street_map.change_street(street_name.lower(), points)
         elif command_type == "r":
             street_name, _ = decode_command(command, command_type)
