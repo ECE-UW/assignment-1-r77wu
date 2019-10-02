@@ -132,10 +132,12 @@ class StreetMap:
 
 
         E_graph = 'E = {\n'
-        for e in graph_edges_repr:
-            e = list(e)
-            E_graph += spaces2 + '<' + str(e[0]) + ',' + str(e[1]) + '>,\n'
-        E_graph = E_graph[:-2] + '\n'
+        for i in range(len(graph_edges_repr)):
+            e = list(graph_edges_repr[i])
+            if i == (len(graph_edges_repr)-1):
+                E_graph += spaces2 + '<' + str(e[0]) + ',' + str(e[1]) + '>\n'
+            else:
+                E_graph += spaces2 + '<' + str(e[0]) + ',' + str(e[1]) + '>,\n'
         E_graph += '}'
         sys.stdout.write(V_graph + '\n')
         sys.stdout.write(E_graph + '\n')
@@ -149,35 +151,35 @@ def main():
     ### make sure to remove all spurious print statements as required
     ### by the assignment
     while True:
-        command = sys.stdin.readline().strip()
-        command_type = get_command_type(command)
+        try:
+            # command = sys.stdin.readline().strip()
+            command = raw_input()
+            command_type = get_command_type(command)
 
-        if command_type == "a":
-            street_name, points = decode_command(command, command_type)
-            self_intersect = check_self_intersect(points)
-            if self_intersect:
-                sys.stderr.write(ERROR_MSG + 'Cannot add street with self intersect points\n')
-            elif street_name != '' and not self_intersect:
-                street_map.add_street(street_name.lower(), points)
-        elif command_type == "c":
-            street_name, points = decode_command(command, command_type)
-            self_intersect = check_self_intersect(points)
-            if self_intersect:
-                sys.stderr.write(ERROR_MSG + 'Cannot change street with self intersect points\n')
-            elif street_name != '' and not self_intersect:
-                street_map.change_street(street_name.lower(), points)
-        elif command_type == "r":
-            street_name, _ = decode_command(command, command_type)
-            if street_name != '':
-                street_map.remove_street(street_name.lower())
-        elif command_type == "g":
-            street_map.generate_graph()  
-        else: ## command_type == ""
-            sys.stderr.write(ERROR_MSG + 'can only recorgnize command type a / c / r / g\n')
-
-
-    # return exit code 0 on successful termination
-    sys.exit(0)
+            if command_type == "a":
+                street_name, points = decode_command(command, command_type)
+                self_intersect = check_self_intersect(points)
+                if self_intersect:
+                    sys.stderr.write(ERROR_MSG + 'Cannot add street with self intersect points\n')
+                elif street_name != '' and not self_intersect:
+                    street_map.add_street(street_name.lower(), points)
+            elif command_type == "c":
+                street_name, points = decode_command(command, command_type)
+                self_intersect = check_self_intersect(points)
+                if self_intersect:
+                    sys.stderr.write(ERROR_MSG + 'Cannot change street with self intersect points\n')
+                elif street_name != '' and not self_intersect:
+                    street_map.change_street(street_name.lower(), points)
+            elif command_type == "r":
+                street_name, _ = decode_command(command, command_type)
+                if street_name != '':
+                    street_map.remove_street(street_name.lower())
+            elif command_type == "g":
+                street_map.generate_graph()  
+            else: ## command_type == ""
+                sys.stderr.write(ERROR_MSG + 'can only recorgnize command type a / c / r / g\n')
+        except EOFError:
+            sys.exit(0)
 
 if __name__ == '__main__':
     main()

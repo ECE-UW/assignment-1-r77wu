@@ -65,7 +65,7 @@ def line_segment_intersection(line1, line2):
         x_d = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
         y_d = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
 
-        div = det(x_d, y_d)
+        div = float(det(x_d, y_d))
         if div == 0:
             if if_one_line(line1[0], line1[1], line2[0]) and if_one_line(line1[0], line1[1], line2[1]):       
                 if IsPointOnLineSegement(line1[0], line1[1], line2[0]) or IsPointOnLineSegement(line1[0], line1[1], line2[1]):
@@ -90,7 +90,7 @@ def IsPointOnLineSegement(linePointA, linePointB, point):
             max_y = max(linePointA[1],linePointB[1])
             return min_y <= point[1] and point[1] <= max_y
         else:
-            a = (linePointB[1] - linePointA[1]) / (linePointB[0] - linePointA[0])
+            a = (linePointB[1] - linePointA[1]) / float(linePointB[0] - linePointA[0])
             b = linePointA[1] - a * linePointA[0]
             if ( abs(point[1] - (a*point[0]+b)) < EPSILON):
                 min_x = min(linePointA[0],linePointB[0])
